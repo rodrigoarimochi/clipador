@@ -6,7 +6,7 @@ import yt_dlp
 
 def download_video(url: str, dest_dir: Path) -> dict:
     """
-    Baixa o vídeo e áudio na melhor qualidade até 1080p e converte para MP4.
+    Baixa o vídeo usando clientes alternativos (Android/iOS) para evitar bloqueios de formato.
     """
     dest_dir.mkdir(parents=True, exist_ok=True)
     out_template = str(dest_dir / "source.%(ext)s")
@@ -16,21 +16,26 @@ def download_video(url: str, dest_dir: Path) -> dict:
         cookie_path = None
 
     ydl_opts = {
-        # Seleciona o melhor vídeo (até 1080p) + melhor áudio, ou qualquer formato único disponível
-        "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+        # 'b' ou 'ba'/'bv' seleciona qualquer stream disponível
+        "format": "b/bv*+ba/best",
         "outtmpl": out_template,
         "merge_output_format": "mp4",
         "noplaylist": True,
-        "quiet": True,
-        "no_warnings": True,
+        "quiet": False,
+        "no_warnings": False,
         "cookiefile": cookie_path,
+        # Emula clientes de smartphone que recebem formatos diretos do YouTube
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "web"],
+            }
+        },
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         filepath = ydl.prepare_filename(info)
         
-        # Garante o caminho final como .mp4
         mp4_path = Path(filepath).with_suffix(".mp4")
         if not mp4_path.exists():
             mp4_path = Path(filepath)
