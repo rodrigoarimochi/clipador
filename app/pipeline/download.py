@@ -5,9 +5,6 @@ import yt_dlp
 
 
 def download_video(url: str, dest_dir: Path) -> dict:
-    """
-    Baixa o vídeo evitando o erro HTTP 403 através de clientes móveis.
-    """
     dest_dir.mkdir(parents=True, exist_ok=True)
     out_template = str(dest_dir / "source.%(ext)s")
 
@@ -16,22 +13,13 @@ def download_video(url: str, dest_dir: Path) -> dict:
         cookie_path = None
 
     ydl_opts = {
-        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "format": "bestvideo+bestaudio/best",
         "outtmpl": out_template,
         "merge_output_format": "mp4",
         "noplaylist": True,
         "cookiefile": cookie_path,
-        "concurrent_fragment_downloads": 1,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android_vr", "android", "ios"],
-                "player_skip": ["webpage", "configs"],
-            }
-        },
-        "http_headers": {
-            "User-Agent": "com.google.android.youtube/19.29.37 (Linux; U; Android 14; US) gzip",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
+        "quiet": False,
+        "no_warnings": False,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
