@@ -3,10 +3,24 @@ Clipador — versão Streamlit (deploy gratuito via Streamlit Community Cloud).
 Cola o link do YouTube, o app baixa, transcreve, escolhe os melhores momentos,
 corta e queima legenda estilo karaokê.
 """
+import os
 import streamlit as st
 from pathlib import Path
 import tempfile
 import shutil
+
+# --- CONFIGURAÇÃO DE SEGREDOS & COOKIES ---
+# 1. Injeta a ANTHROPIC_API_KEY no ambiente caso esteja nos Secrets
+if "ANTHROPIC_API_KEY" in st.secrets:
+    os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+
+# 2. Escreve os cookies do YouTube em arquivo temporário e exporta o caminho
+if "YOUTUBE_COOKIES" in st.secrets:
+    cookie_path = "/tmp/youtube_cookies.txt"
+    with open(cookie_path, "w", encoding="utf-8") as f:
+        f.write(st.secrets["YOUTUBE_COOKIES"])
+    os.environ["YOUTUBE_COOKIES_PATH"] = cookie_path
+# ------------------------------------------
 
 from app import config
 from app.pipeline import download, transcribe, highlights, subtitles, cut
@@ -91,10 +105,10 @@ if run_btn and url:
         status.update(label="Deu erro no processo.", state="error")
         st.error(str(e))
     finally:
-        # limpa os arquivos temporários da sessão (menos os clipes já mostrados acima)
         pass
 
-st.caption(
-    "Sem ANTHROPIC_API_KEY configurada, a escolha dos melhores momentos usa um "
-    "heurístico simples. Configure a chave em Settings → Secrets pra usar IA."
-)
+if "ANTHROPIC_API_KEY" not in st.secrets:
+    st.caption(
+        "Sem ANTHROPIC_API_KEY configurada, a escolha dos melhores momentos usa um "
+        "heurístico simples. Configure a chave em Settings → Secrets pra usar IA."
+    )
