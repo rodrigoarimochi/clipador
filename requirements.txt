@@ -1,9 +1,10 @@
 streamlit==1.38.0
-yt-dlp
+yt-dlp>=2024.12.13
 faster-whisper==1.0.3
 anthropic==0.34.2
 
-# Opcionais (FastAPI/VPS/Docker)
+# Só necessário se você optar por rodar via app/main.py (FastAPI/VPS/Docker)
+# em vez da versão Streamlit (streamlit_app.py):
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 python-multipart==0.0.9
